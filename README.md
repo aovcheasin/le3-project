@@ -1,6 +1,6 @@
 # Bilibili Downloader Tool
 
-A command-line tool that downloads a Bilibili video, extracts an **instrumental BGM** (vocals/dialogue removed via AI source separation), and converts subtitles/danmaku to **SRT** format.
+A command-line tool and GUI that downloads a Bilibili video, extracts an **instrumental BGM** (vocals/dialogue removed via AI source separation), and converts subtitles/danmaku to **SRT** format.
 
 ## Outputs
 
@@ -22,6 +22,8 @@ A command-line tool that downloads a Bilibili video, extracts an **instrumental 
 
 ## Usage
 
+### Command Line
+
 ```powershell
 # Full download: video + instrumental BGM + SRT subtitles
 python bilibili_tool.py "https://www.bilibili.com/video/BV1ujWb6tE2t/" -o ./my_downloads
@@ -35,13 +37,31 @@ python bilibili_tool.py "URL" --no-bgm
 # Skip subtitle processing
 python bilibili_tool.py "URL" --no-subs
 
-# Keep temporary files for debugging
+# Keep temp files for debugging
 python bilibili_tool.py "URL" -o ./out --keep-temp
+
+# Use browser cookies for login-gated videos
+python bilibili_tool.py "URL" -o ./out --cookies-from-browser edge
 ```
 
+### Graphical User Interface
+
+```powershell
+python bilibili_tool_gui.py
+```
+
+The GUI provides:
+- **URL input** with paste button
+- **Output folder** picker
+- **Skip options** for video / BGM / subtitles
+- **Cookies-from-browser** dropdown for login-gated videos
+- **Keep temporary files** toggle
+- **Live log** showing download/separation progress
+- **Start Download** button (runs in background, UI stays responsive)
+- **Open Output Folder** button when finished
 ## How It Works
 
-1. **Download** – `yt-dlp` fetches the video, thumbnail, and any available subtitles/danmaku from Bilibili.
+1. **Download** – `yt-dlp` fetches the video, thumbnail, and any available subtitles/danmaku from Bilibili. Language prefixes (`/zh-Hans/`, etc.) and tracking params are stripped automatically.
 2. **Audio extraction** – `ffmpeg` pulls the audio track from the video.
 3. **Source separation** – `Demucs` (`--two-stems vocals`) runs AI source separation to isolate vocals from the music. The `no_vocals` stem is saved as the instrumental BGM.
 4. **Subtitle conversion** – Bilibili danmaku XML (`<d p="time,...">content</d>`) is parsed and converted to SRT format. Other subtitle formats (VTT, ASS, SSA) are transcoded via `ffmpeg`.
@@ -51,11 +71,13 @@ python bilibili_tool.py "URL" -o ./out --keep-temp
 - The yt-dlp post-processing warning about danmaku embedding is non-fatal; the video still downloads correctly.
 - The instrumental BGM quality depends on Demucs separation; some residual vocals or SFX may remain in complex mixes.
 - On Windows, `PYTHONIOENCODING=utf-8` is set automatically when invoking Demucs to avoid console encoding errors with non-ASCII filenames.
+- If a video requires login, use `--cookies-from-browser edge` (CLI) or select a browser from the dropdown (GUI).
 
 ## Example Output
 
 ```
 Finished!
-  Video      : E:\zest\test_output\没有骑士的王，是没有故乡的人（合集）【AI全民制作人】.mp4
-  BGM (inst) : E:\zest\test_output\没有骑士的王，是没有故乡的人（合集）【AI全民制作人】_BGM_instrumental.mp3
-  Subtitle   : E:\zest\test_output\没有骑士的王，是没有故乡的人（合集）【AI全民制作人】.srt
+  Video      : E:\zest\test_output\《title》.mp4
+  BGM (inst) : E:\zest\test_output\《title》_BGM_instrumental.mp3
+  Subtitle   : E:\zest\test_output\《title》.srt
+```
